@@ -34,6 +34,9 @@ input::-webkit-inner-spin-button,input::-webkit-outer-spin-button{-webkit-appear
 input[type=number]{-moz-appearance:textfield}
 .big{font-size:24px;font-weight:600;letter-spacing:-.02em;margin-top:4px}
 .chip{font:inherit;font-size:13px;color:#fff;background:var(--soft) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M1 1l4 4 4-4' fill='none' stroke='%23fff' stroke-opacity='.6' stroke-width='1.5'/%3E%3C/svg%3E") no-repeat right 11px center;border:0;border-radius:99px;padding:6px 28px 6px 12px;appearance:none;-webkit-appearance:none;outline:none;max-width:60%}
+.sugg{display:flex;gap:6px;overflow-x:auto;margin:12px -16px 0;padding:0 16px;scrollbar-width:none}.sugg::-webkit-scrollbar{display:none}.sugg:empty{display:none}
+.sugg button{flex:none;border:0;border-radius:99px;background:var(--soft);color:#fff;font:inherit;font-size:14px;padding:8px 14px;cursor:pointer}.sugg button:active{background:rgba(255,255,255,.18)}
+.sugg small{color:var(--t3);font-size:12px;margin-left:6px}
 .steps{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:14px}
 .step{background:var(--soft);border-radius:20px;padding:12px 8px 8px;text-align:center}
 .step input{font-size:34px;font-weight:600;letter-spacing:-.03em;text-align:center;margin:2px 0 4px}
@@ -87,8 +90,8 @@ nav .on{background:#fff;color:#000}
   <h1>Séance</h1>
   <form class="g" id="form">
     <div class="between"><label class="lab" for="ex">Exercice</label><select id="zone" class="chip" aria-label="Zone"></select></div>
-    <input id="ex" class="big" list="exs" placeholder="Squat" required autocomplete="off">
-    <datalist id="exs"></datalist>
+    <input id="ex" class="big" placeholder="Squat" required autocomplete="off" autocapitalize="sentences" spellcheck="false">
+    <div class="sugg" id="sugg"></div>
     <div class="steps">
       <div class="step"><label class="lab" for="reps">Reps</label><input id="reps" type="number" inputmode="numeric" min="1" data-min="1" required placeholder="10">
         <div><button type="button" data-step="reps" data-d="-1" aria-label="Moins une rep">−</button><button type="button" data-step="reps" data-d="1" aria-label="Plus une rep">+</button></div></div>
@@ -157,17 +160,31 @@ const delta = (now, before) => {
 $('zone').innerHTML = ZONES.map(z => `<option>${z}</option>`).join('');
 $('date').textContent = new Date().toLocaleDateString('fr-FR', {weekday:'long', day:'numeric', month:'long'});
 
+const norm = s => s.normalize('NFD').replace(/\p{M}/gu, '').toLowerCase().trim(); // « Développé » == « developpe »
+
+// Suggestions : exercices déjà faits, du plus récent au plus ancien, ceux qui commencent par la saisie en premier
+function suggest() {
+  const q = norm($('ex').value), seen = new Map();
+  for (let i = sets.length - 1; i >= 0; i--) if (!seen.has(sets[i].ex)) seen.set(sets[i].ex, sets[i]);
+  const list = [...seen.values()].filter(s => norm(s.ex).includes(q) && norm(s.ex) !== q)
+    .sort((a, b) => norm(b.ex).startsWith(q) - norm(a.ex).startsWith(q)).slice(0, 8);
+  $('sugg').innerHTML = list.map(s => `<button type="button" data-pick="${esc(s.ex)}">${esc(s.ex)}<small>${fmt(s)}</small></button>`).join('');
+  $('sugg').scrollLeft = 0;
+}
+
 $('ex').addEventListener('input', e => {
-  const v = e.target.value.trim().toLowerCase();
-  const last = sets.findLast(s => s.ex.toLowerCase() === v);
+  suggest();
+  const v = norm(e.target.value);
+  const last = sets.findLast(s => norm(s.ex) === v);
   if (last) { $('zone').value = last.zone; $('reps').value = last.reps; $('kg').value = last.kg ? num(last.kg) : ''; return; }
-  const k = Object.keys(GUESS).find(k => v.includes(k));
+  const k = Object.keys(GUESS).find(k => v.includes(norm(k)));
   if (k) $('zone').value = GUESS[k];
 });
 
 $('form').onsubmit = e => {
   e.preventDefault();
-  sets.push({id: Date.now(), date: new Date().toISOString(), ex: $('ex').value.trim(), zone: $('zone').value, reps: +$('reps').value, kg: parse($('kg').value)});
+  const name = $('ex').value.trim(), known = sets.findLast(s => norm(s.ex) === norm(name))?.ex; // garde l'orthographe existante
+  sets.push({id: Date.now(), date: new Date().toISOString(), ex: known || name, zone: $('zone').value, reps: +$('reps').value, kg: parse($('kg').value)});
   save(); render(); navigator.vibrate?.(30);
 };
 
@@ -180,7 +197,7 @@ const row = (s, dup) => `<div class="set">
 function renderLog() {
   const t = sets.filter(s => dayKey(s.date) === dayKey(Date.now())).reverse();
   $('todayList').innerHTML = `<p class="lab" style="margin-bottom:8px">Aujourd'hui${t.length ? ' · ' + t.length + (t.length > 1 ? ' séries' : ' série') : ''}</p>` + (t.length ? t.map(s => row(s, true)).join('') : '<p class="empty">Aucune série pour l\'instant</p>');
-  $('exs').innerHTML = [...new Set(sets.map(s => s.ex))].map(x => `<option value="${esc(x)}">`).join('');
+  suggest();
 }
 
 function renderHist() {
@@ -281,6 +298,7 @@ function render() { renderLog(); renderHist(); if (tab === 'stats') renderStats(
 document.addEventListener('click', e => {
   const b = e.target.closest('button'); if (!b) return;
   if (b.dataset.tab) show(b.dataset.tab);
+  if (b.dataset.pick) { $('ex').value = b.dataset.pick; $('ex').dispatchEvent(new Event('input')); }
   if (b.dataset.step) { const i = $(b.dataset.step); i.value = num(Math.max(+i.dataset.min, parse(i.value) + +b.dataset.d)); }
   if (b.dataset.del && confirm('Supprimer cette série ?')) { sets = sets.filter(s => s.id != b.dataset.del); save(); render(); }
   if (b.dataset.dup) { const s = sets.find(s => s.id == b.dataset.dup); sets.push({...s, id: Date.now(), date: new Date().toISOString()}); save(); render(); navigator.vibrate?.(30); }
