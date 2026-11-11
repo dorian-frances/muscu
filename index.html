@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#000000">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -14,11 +14,15 @@
 <style>
 :root{--t2:rgba(255,255,255,.6);--t3:rgba(255,255,255,.4);--glass:rgba(255,255,255,.06);--stroke:rgba(255,255,255,.12);--soft:rgba(255,255,255,.07);--up:#30d158;--down:#ff453a;color-scheme:dark}
 *{box-sizing:border-box;margin:0}
-body{background:#000;color:#fff;font:16px/1.4 -apple-system,BlinkMacSystemFont,"SF Pro Text",Inter,system-ui,sans-serif;padding:calc(env(safe-area-inset-top) + 24px) 16px calc(env(safe-area-inset-bottom) + 110px);-webkit-tap-highlight-color:transparent;-webkit-font-smoothing:antialiased}
+html,body{height:100%;overflow:hidden;overscroll-behavior:none}
+body{background:#000;color:#fff;font:16px/1.4 -apple-system,BlinkMacSystemFont,"SF Pro Text",Inter,system-ui,sans-serif;height:100dvh;-webkit-tap-highlight-color:transparent;-webkit-font-smoothing:antialiased;-webkit-text-size-adjust:100%}
+button,select,label,nav{touch-action:manipulation;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
+.top{position:fixed;z-index:2;top:0;left:0;right:0;height:calc(env(safe-area-inset-top) + 16px);background:linear-gradient(rgba(0,0,0,.85) 55%,transparent);pointer-events:none}
 body::before,body::after{content:"";position:fixed;z-index:-1;border-radius:50%;pointer-events:none}
 body::before{width:560px;height:560px;top:-240px;right:-260px;background:radial-gradient(circle,rgba(255,255,255,.17),transparent 65%)}
 body::after{width:520px;height:520px;bottom:-200px;left:-280px;background:radial-gradient(circle,rgba(255,255,255,.09),transparent 65%)}
-main{max-width:560px;margin:auto}
+main{height:100%;overflow-y:auto;overscroll-behavior-y:contain;padding:calc(env(safe-area-inset-top) + 20px) max(16px,env(safe-area-inset-left)) calc(env(safe-area-inset-bottom) + 100px)}
+section{max-width:560px;margin:auto}
 .date{font-size:13px;color:var(--t2);padding:0 6px;text-transform:capitalize}
 h1{font-size:32px;font-weight:700;letter-spacing:-.035em;padding:0 6px;margin-bottom:16px}
 .g{background:var(--glass);border:1px solid var(--stroke);border-radius:26px;padding:16px;margin-bottom:10px;backdrop-filter:blur(24px) saturate(140%);-webkit-backdrop-filter:blur(24px) saturate(140%)}
@@ -70,12 +74,13 @@ input[type=number]{-moz-appearance:textfield}
 .legend i{width:10px;height:10px;border-radius:3px}
 .day{font-size:13px;color:var(--t2);margin:18px 6px 8px;text-transform:capitalize}
 .row{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:16px}
-nav{position:fixed;left:50%;bottom:calc(env(safe-area-inset-bottom) + 14px);transform:translateX(-50%);display:flex;gap:4px;padding:5px;border-radius:99px;background:rgba(30,30,30,.55);border:1px solid var(--stroke);backdrop-filter:blur(24px) saturate(160%);-webkit-backdrop-filter:blur(24px) saturate(160%)}
-nav button{border:0;background:none;color:var(--t2);font:inherit;font-size:13px;font-weight:600;padding:10px 18px;border-radius:99px;cursor:pointer;transition:background .2s,color .2s}
+nav{position:fixed;z-index:3;left:0;right:0;margin:auto;width:min(340px,calc(100% - 32px));bottom:max(14px,calc(env(safe-area-inset-bottom) - 6px));display:grid;grid-template-columns:repeat(3,1fr);gap:4px;padding:5px;border-radius:99px;background:rgba(30,30,30,.55);border:1px solid var(--stroke);backdrop-filter:blur(24px) saturate(160%);-webkit-backdrop-filter:blur(24px) saturate(160%)}
+nav button{border:0;background:none;color:var(--t2);font:inherit;font-size:13px;font-weight:600;padding:11px 0;border-radius:99px;cursor:pointer;transition:background .2s,color .2s}
 nav .on{background:#fff;color:#000}
 </style>
 </head>
 <body>
+<div class="top"></div>
 <main>
 <section id="log">
   <p class="date" id="date"></p>
@@ -85,9 +90,9 @@ nav .on{background:#fff;color:#000}
     <input id="ex" class="big" list="exs" placeholder="Squat" required autocomplete="off">
     <datalist id="exs"></datalist>
     <div class="steps">
-      <div class="step"><label class="lab" for="reps">Reps</label><input id="reps" type="number" inputmode="numeric" min="1" required placeholder="10">
+      <div class="step"><label class="lab" for="reps">Reps</label><input id="reps" type="number" inputmode="numeric" min="1" data-min="1" required placeholder="10">
         <div><button type="button" data-step="reps" data-d="-1" aria-label="Moins une rep">−</button><button type="button" data-step="reps" data-d="1" aria-label="Plus une rep">+</button></div></div>
-      <div class="step"><label class="lab" for="kg">Kg</label><input id="kg" type="number" inputmode="decimal" min="0" step="0.5" placeholder="—">
+      <div class="step"><label class="lab" for="kg">Kg</label><input id="kg" inputmode="decimal" data-min="0" placeholder="—" autocomplete="off">
         <div><button type="button" data-step="kg" data-d="-2.5" aria-label="Moins 2,5 kg">−</button><button type="button" data-step="kg" data-d="2.5" aria-label="Plus 2,5 kg">+</button></div></div>
     </div>
     <button class="cta">Ajouter la série</button>
@@ -141,6 +146,7 @@ const addDays = (d, n) => { d = new Date(d); d.setDate(d.getDate() + n); return 
 const between = (s, a, b) => { const t = new Date(s.date); return t >= a && t < b; };
 const fmt = s => s.kg ? `${s.reps} × ${num(s.kg)} kg` : `${s.reps} reps`;
 const num = n => n.toLocaleString('fr-FR', {maximumFractionDigits: 1});
+const parse = v => parseFloat(String(v).replace(',', '.')) || 0;
 const sum = (arr, f) => arr.reduce((a, s) => a + f(s), 0);
 const delta = (now, before) => {
   if (!before) return '';
@@ -154,14 +160,14 @@ $('date').textContent = new Date().toLocaleDateString('fr-FR', {weekday:'long', 
 $('ex').addEventListener('input', e => {
   const v = e.target.value.trim().toLowerCase();
   const last = sets.findLast(s => s.ex.toLowerCase() === v);
-  if (last) { $('zone').value = last.zone; $('reps').value = last.reps; $('kg').value = last.kg || ''; return; }
+  if (last) { $('zone').value = last.zone; $('reps').value = last.reps; $('kg').value = last.kg ? num(last.kg) : ''; return; }
   const k = Object.keys(GUESS).find(k => v.includes(k));
   if (k) $('zone').value = GUESS[k];
 });
 
 $('form').onsubmit = e => {
   e.preventDefault();
-  sets.push({id: Date.now(), date: new Date().toISOString(), ex: $('ex').value.trim(), zone: $('zone').value, reps: +$('reps').value, kg: +$('kg').value || 0});
+  sets.push({id: Date.now(), date: new Date().toISOString(), ex: $('ex').value.trim(), zone: $('zone').value, reps: +$('reps').value, kg: parse($('kg').value)});
   save(); render(); navigator.vibrate?.(30);
 };
 
@@ -173,7 +179,7 @@ const row = (s, dup) => `<div class="set">
 
 function renderLog() {
   const t = sets.filter(s => dayKey(s.date) === dayKey(Date.now())).reverse();
-  $('todayList').innerHTML = `<p class="lab" style="margin-bottom:8px">Aujourd'hui${t.length ? ' · ' + t.length + ' séries' : ''}</p>` + (t.length ? t.map(s => row(s, true)).join('') : '<p class="empty">Aucune série pour l\'instant</p>');
+  $('todayList').innerHTML = `<p class="lab" style="margin-bottom:8px">Aujourd'hui${t.length ? ' · ' + t.length + (t.length > 1 ? ' séries' : ' série') : ''}</p>` + (t.length ? t.map(s => row(s, true)).join('') : '<p class="empty">Aucune série pour l\'instant</p>');
   $('exs').innerHTML = [...new Set(sets.map(s => s.ex))].map(x => `<option value="${esc(x)}">`).join('');
 }
 
@@ -268,22 +274,23 @@ function show(t) {
   tab = t;
   document.querySelectorAll('section').forEach(s => s.hidden = s.id !== t);
   document.querySelectorAll('nav button').forEach(b => b.classList.toggle('on', b.dataset.tab === t));
-  scrollTo(0, 0); render();
+  document.querySelector('main').scrollTop = 0; render();
 }
 function render() { renderLog(); renderHist(); if (tab === 'stats') renderStats(); }
 
 document.addEventListener('click', e => {
   const b = e.target.closest('button'); if (!b) return;
   if (b.dataset.tab) show(b.dataset.tab);
-  if (b.dataset.step) { const i = $(b.dataset.step); i.value = Math.max(+i.min, (+i.value || 0) + +b.dataset.d); }
+  if (b.dataset.step) { const i = $(b.dataset.step); i.value = num(Math.max(+i.dataset.min, parse(i.value) + +b.dataset.d)); }
   if (b.dataset.del && confirm('Supprimer cette série ?')) { sets = sets.filter(s => s.id != b.dataset.del); save(); render(); }
   if (b.dataset.dup) { const s = sets.find(s => s.id == b.dataset.dup); sets.push({...s, id: Date.now(), date: new Date().toISOString()}); save(); render(); navigator.vibrate?.(30); }
 });
 
 $('exp').onclick = () => {
+  const f = new File([JSON.stringify(sets)], `muscu-${dayKey(Date.now())}.json`, {type: 'application/json'});
+  if (navigator.canShare?.({files: [f]})) return navigator.share({files: [f]}).catch(() => {});
   const a = document.createElement('a');
-  a.href = URL.createObjectURL(new Blob([JSON.stringify(sets)], {type: 'application/json'}));
-  a.download = `muscu-${dayKey(Date.now())}.json`; a.click();
+  a.href = URL.createObjectURL(f); a.download = f.name; a.click();
 };
 $('imp').onchange = async e => {
   try {
