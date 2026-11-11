@@ -1,0 +1,304 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#000000">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Muscu">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon.png">
+<title>Muscu</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<style>
+:root{--t2:rgba(255,255,255,.6);--t3:rgba(255,255,255,.4);--glass:rgba(255,255,255,.06);--stroke:rgba(255,255,255,.12);--soft:rgba(255,255,255,.07);--up:#30d158;--down:#ff453a;color-scheme:dark}
+*{box-sizing:border-box;margin:0}
+body{background:#000;color:#fff;font:16px/1.4 -apple-system,BlinkMacSystemFont,"SF Pro Text",Inter,system-ui,sans-serif;padding:calc(env(safe-area-inset-top) + 24px) 16px calc(env(safe-area-inset-bottom) + 110px);-webkit-tap-highlight-color:transparent;-webkit-font-smoothing:antialiased}
+body::before,body::after{content:"";position:fixed;z-index:-1;border-radius:50%;pointer-events:none}
+body::before{width:560px;height:560px;top:-240px;right:-260px;background:radial-gradient(circle,rgba(255,255,255,.17),transparent 65%)}
+body::after{width:520px;height:520px;bottom:-200px;left:-280px;background:radial-gradient(circle,rgba(255,255,255,.09),transparent 65%)}
+main{max-width:560px;margin:auto}
+.date{font-size:13px;color:var(--t2);padding:0 6px;text-transform:capitalize}
+h1{font-size:32px;font-weight:700;letter-spacing:-.035em;padding:0 6px;margin-bottom:16px}
+.g{background:var(--glass);border:1px solid var(--stroke);border-radius:26px;padding:16px;margin-bottom:10px;backdrop-filter:blur(24px) saturate(140%);-webkit-backdrop-filter:blur(24px) saturate(140%)}
+.lab{font-size:12px;color:var(--t2)}
+.between{display:flex;justify-content:space-between;align-items:center;gap:8px}
+input{font:inherit;color:#fff;background:none;border:0;outline:none;width:100%;padding:0}
+input::placeholder{color:rgba(255,255,255,.25)}
+input::-webkit-inner-spin-button,input::-webkit-outer-spin-button{-webkit-appearance:none}
+input[type=number]{-moz-appearance:textfield}
+.big{font-size:24px;font-weight:600;letter-spacing:-.02em;margin-top:4px}
+.chip{font:inherit;font-size:13px;color:#fff;background:var(--soft) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M1 1l4 4 4-4' fill='none' stroke='%23fff' stroke-opacity='.6' stroke-width='1.5'/%3E%3C/svg%3E") no-repeat right 11px center;border:0;border-radius:99px;padding:6px 28px 6px 12px;appearance:none;-webkit-appearance:none;outline:none;max-width:60%}
+.steps{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:14px}
+.step{background:var(--soft);border-radius:20px;padding:12px 8px 8px;text-align:center}
+.step input{font-size:34px;font-weight:600;letter-spacing:-.03em;text-align:center;margin:2px 0 4px}
+.step div{display:flex;gap:6px}
+.step button{flex:1;height:40px;border:0;border-radius:14px;background:var(--soft);color:#fff;font-size:20px;cursor:pointer}
+.step button:active{background:rgba(255,255,255,.18)}
+.cta{display:block;width:100%;margin-top:12px;padding:16px;border:0;border-radius:18px;background:#fff;color:#000;font:inherit;font-weight:600;font-size:16px;cursor:pointer;transition:transform .1s}
+.cta:active{transform:scale(.98)}
+.ghost{background:var(--glass);border:1px solid var(--stroke);color:#fff;text-align:center}
+.set{display:flex;align-items:center;gap:10px;padding:12px 0;border-top:1px solid rgba(255,255,255,.08)}
+.set:first-child,.lab+.set{border:0;padding-top:2px}.set:last-child{padding-bottom:2px}
+.info{flex:1;min-width:0}
+.info b{display:block;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.info small{color:var(--t3);font-size:12px}
+.val{color:var(--t2);font-variant-numeric:tabular-nums;white-space:nowrap;font-size:15px}
+.icon{border:0;background:none;color:var(--t3);font-size:16px;padding:6px;cursor:pointer}
+.empty{color:var(--t3);text-align:center;padding:10px 0;font-size:14px}
+.delta{font-size:11px;font-weight:600;border-radius:99px;padding:3px 8px;background:var(--soft);color:var(--t2);white-space:nowrap}
+.delta.up{color:var(--up);background:rgba(48,209,88,.12)}
+.delta.down{color:var(--down);background:rgba(255,69,58,.12)}
+.hero-n{font-size:46px;font-weight:700;letter-spacing:-.045em;line-height:1.1;margin-top:2px}
+.hero-n small{font-size:22px;font-weight:600;color:var(--t2);letter-spacing:-.02em}
+.spark{position:relative;height:90px;margin:6px -6px -6px}
+.kpis{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:10px}
+.kpis .g{margin:0;border-radius:20px;padding:12px}
+.kpis strong{display:block;font-size:24px;font-weight:700;letter-spacing:-.03em}
+.kpis .delta{display:inline-block;margin-top:6px}
+.zone{font-size:14px;margin-top:10px}
+.zone span:last-child{color:var(--t3);font-variant-numeric:tabular-nums}
+.zone.off{color:var(--t3)}
+.track{height:6px;border-radius:9px;background:var(--soft);margin-top:5px;overflow:hidden}
+.track i{display:block;height:100%;border-radius:9px;background:#fff}
+.rec{font-size:14px;color:var(--t2);margin-top:10px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}.rec b{color:#fff;font-weight:600}
+.chart{position:relative;height:200px;margin-top:10px}
+.heat{display:grid;grid-auto-flow:column;grid-template-rows:repeat(7,1fr);gap:3px;margin-top:12px}
+.heat i{aspect-ratio:1;border-radius:3px}
+.legend{display:flex;align-items:center;justify-content:flex-end;gap:3px;margin-top:10px;font-size:11px;color:var(--t3)}
+.legend i{width:10px;height:10px;border-radius:3px}
+.day{font-size:13px;color:var(--t2);margin:18px 6px 8px;text-transform:capitalize}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:16px}
+nav{position:fixed;left:50%;bottom:calc(env(safe-area-inset-bottom) + 14px);transform:translateX(-50%);display:flex;gap:4px;padding:5px;border-radius:99px;background:rgba(30,30,30,.55);border:1px solid var(--stroke);backdrop-filter:blur(24px) saturate(160%);-webkit-backdrop-filter:blur(24px) saturate(160%)}
+nav button{border:0;background:none;color:var(--t2);font:inherit;font-size:13px;font-weight:600;padding:10px 18px;border-radius:99px;cursor:pointer;transition:background .2s,color .2s}
+nav .on{background:#fff;color:#000}
+</style>
+</head>
+<body>
+<main>
+<section id="log">
+  <p class="date" id="date"></p>
+  <h1>Séance</h1>
+  <form class="g" id="form">
+    <div class="between"><label class="lab" for="ex">Exercice</label><select id="zone" class="chip" aria-label="Zone"></select></div>
+    <input id="ex" class="big" list="exs" placeholder="Squat" required autocomplete="off">
+    <datalist id="exs"></datalist>
+    <div class="steps">
+      <div class="step"><label class="lab" for="reps">Reps</label><input id="reps" type="number" inputmode="numeric" min="1" required placeholder="10">
+        <div><button type="button" data-step="reps" data-d="-1" aria-label="Moins une rep">−</button><button type="button" data-step="reps" data-d="1" aria-label="Plus une rep">+</button></div></div>
+      <div class="step"><label class="lab" for="kg">Kg</label><input id="kg" type="number" inputmode="decimal" min="0" step="0.5" placeholder="—">
+        <div><button type="button" data-step="kg" data-d="-2.5" aria-label="Moins 2,5 kg">−</button><button type="button" data-step="kg" data-d="2.5" aria-label="Plus 2,5 kg">+</button></div></div>
+    </div>
+    <button class="cta">Ajouter la série</button>
+  </form>
+  <div class="g" id="todayList"></div>
+</section>
+
+<section id="stats" hidden>
+  <p class="date">Tes performances</p>
+  <h1>Stats</h1>
+  <div class="g">
+    <div class="between"><span class="lab" id="heroLab"></span><span id="heroDelta"></span></div>
+    <div class="hero-n" id="heroN"></div>
+    <div class="spark"><canvas id="cHero"></canvas></div>
+  </div>
+  <div class="kpis" id="kpis"></div>
+  <div class="g"><span class="lab">Zones · 30 jours</span><div id="zones"></div></div>
+  <div class="g"><div class="between"><span class="lab">Progression</span><select id="pex" class="chip" aria-label="Exercice"></select></div><div class="rec" id="rec"></div><div class="chart"><canvas id="cProg"></canvas></div></div>
+  <div class="g"><span class="lab">Régularité · 18 semaines</span><div class="heat" id="heat"></div><div class="legend" id="heatLegend"></div></div>
+</section>
+
+<section id="hist" hidden>
+  <p class="date" id="histSub"></p>
+  <h1>Historique</h1>
+  <div id="histList"></div>
+  <div class="row"><button class="cta ghost" id="exp">Exporter</button><label class="cta ghost">Importer<input type="file" id="imp" accept=".json,application/json" hidden></label></div>
+</section>
+</main>
+
+<nav>
+  <button data-tab="log" class="on">Séance</button>
+  <button data-tab="stats">Stats</button>
+  <button data-tab="hist">Historique</button>
+</nav>
+
+<script>
+const ZONES = ['Pectoraux','Dos','Épaules','Biceps','Triceps','Jambes','Fessiers','Abdos','Cardio'];
+// ponytail: devinette par mot-clé, la zone choisie une fois est ensuite mémorisée par exercice
+const GUESS = {couché:'Pectoraux',pec:'Pectoraux',pompe:'Pectoraux',écarté:'Pectoraux',dips:'Triceps',traction:'Dos',rowing:'Dos',tirage:'Dos',soulevé:'Dos',militaire:'Épaules',épaule:'Épaules',élévation:'Épaules',curl:'Biceps',biceps:'Biceps',triceps:'Triceps',barre:'Triceps',squat:'Jambes',presse:'Jambes',fente:'Jambes',leg:'Jambes',mollet:'Jambes',hip:'Fessiers',fessier:'Fessiers',crunch:'Abdos',abdo:'Abdos',gainage:'Abdos',planche:'Abdos',course:'Cardio',vélo:'Cardio',rameur:'Cardio',corde:'Cardio'};
+const HEAT = [.06, .25, .45, .7, 1].map(a => `rgba(255,255,255,${a})`);
+
+let sets = JSON.parse(localStorage.getItem('sets') || '[]');
+const save = () => localStorage.setItem('sets', JSON.stringify(sets));
+navigator.storage?.persist?.();
+
+const $ = id => document.getElementById(id);
+const esc = s => String(s).replace(/[&<>"]/g, c => '&#' + c.charCodeAt(0) + ';');
+const dayKey = d => new Date(d).toLocaleDateString('sv'); // YYYY-MM-DD local
+const monday = d => { d = new Date(d); d.setHours(0,0,0,0); d.setDate(d.getDate() - (d.getDay() + 6) % 7); return d; };
+const addDays = (d, n) => { d = new Date(d); d.setDate(d.getDate() + n); return d; };
+const between = (s, a, b) => { const t = new Date(s.date); return t >= a && t < b; };
+const fmt = s => s.kg ? `${s.reps} × ${num(s.kg)} kg` : `${s.reps} reps`;
+const num = n => n.toLocaleString('fr-FR', {maximumFractionDigits: 1});
+const sum = (arr, f) => arr.reduce((a, s) => a + f(s), 0);
+const delta = (now, before) => {
+  if (!before) return '';
+  const p = Math.round((now - before) / before * 100);
+  return `<span class="delta ${p > 0 ? 'up' : p < 0 ? 'down' : ''}">${p > 0 ? '▲' : p < 0 ? '▼' : '='} ${Math.abs(p)} %</span>`;
+};
+
+$('zone').innerHTML = ZONES.map(z => `<option>${z}</option>`).join('');
+$('date').textContent = new Date().toLocaleDateString('fr-FR', {weekday:'long', day:'numeric', month:'long'});
+
+$('ex').addEventListener('input', e => {
+  const v = e.target.value.trim().toLowerCase();
+  const last = sets.findLast(s => s.ex.toLowerCase() === v);
+  if (last) { $('zone').value = last.zone; $('reps').value = last.reps; $('kg').value = last.kg || ''; return; }
+  const k = Object.keys(GUESS).find(k => v.includes(k));
+  if (k) $('zone').value = GUESS[k];
+});
+
+$('form').onsubmit = e => {
+  e.preventDefault();
+  sets.push({id: Date.now(), date: new Date().toISOString(), ex: $('ex').value.trim(), zone: $('zone').value, reps: +$('reps').value, kg: +$('kg').value || 0});
+  save(); render(); navigator.vibrate?.(30);
+};
+
+const row = (s, dup) => `<div class="set">
+  <div class="info"><b>${esc(s.ex)}</b><small>${esc(s.zone)} · ${new Date(s.date).toLocaleTimeString('fr-FR', {hour:'2-digit', minute:'2-digit'})}</small></div>
+  <span class="val">${fmt(s)}</span>
+  ${dup ? `<button class="icon" data-dup="${s.id}" aria-label="Refaire cette série">↻</button>` : ''}
+  <button class="icon" data-del="${s.id}" aria-label="Supprimer">✕</button></div>`;
+
+function renderLog() {
+  const t = sets.filter(s => dayKey(s.date) === dayKey(Date.now())).reverse();
+  $('todayList').innerHTML = `<p class="lab" style="margin-bottom:8px">Aujourd'hui${t.length ? ' · ' + t.length + ' séries' : ''}</p>` + (t.length ? t.map(s => row(s, true)).join('') : '<p class="empty">Aucune série pour l\'instant</p>');
+  $('exs').innerHTML = [...new Set(sets.map(s => s.ex))].map(x => `<option value="${esc(x)}">`).join('');
+}
+
+function renderHist() {
+  const days = Object.groupBy([...sets].reverse(), s => dayKey(s.date));
+  const keys = Object.keys(days);
+  $('histSub').textContent = `${keys.length} séance${keys.length > 1 ? 's' : ''} · ${sets.length} séries`;
+  $('histList').innerHTML = keys.map(k => {
+    const d = days[k];
+    return `<p class="day">${new Date(k + 'T12:00').toLocaleDateString('fr-FR', {weekday:'long', day:'numeric', month:'long'})} · ${d.length} séries · ${sum(d, s => s.reps)} reps</p>
+      <div class="g">${d.map(s => row(s)).join('')}</div>`;
+  }).join('') || '<p class="empty">Rien ici encore</p>';
+}
+
+// ---------- Stats ----------
+Object.assign(Chart.defaults, {color: 'rgba(255,255,255,.4)', borderColor: 'rgba(255,255,255,.06)', maintainAspectRatio: false});
+Chart.defaults.font.family = '-apple-system,BlinkMacSystemFont,Inter,system-ui,sans-serif';
+Chart.defaults.plugins.legend.display = false;
+Object.assign(Chart.defaults.plugins.tooltip, {backgroundColor: 'rgba(28,28,28,.92)', borderColor: 'rgba(255,255,255,.12)', borderWidth: 1, padding: 10, displayColors: false, titleColor: 'rgba(255,255,255,.6)', bodyColor: '#fff', bodyFont: {weight: 600}, cornerRadius: 12});
+const charts = {};
+const draw = (id, cfg) => { charts[id]?.destroy(); charts[id] = new Chart($(id), cfg); };
+const fade = ({chart: {ctx, chartArea: a}}) => { if (!a) return; const g = ctx.createLinearGradient(0, a.top, 0, a.bottom); g.addColorStop(0, 'rgba(255,255,255,.28)'); g.addColorStop(1, 'rgba(255,255,255,0)'); return g; };
+const line = data => ({data, borderColor: '#fff', borderWidth: 2, cubicInterpolationMode: 'monotone', fill: true, backgroundColor: fade, pointRadius: 0, pointHoverRadius: 5, pointBackgroundColor: '#fff'});
+
+function renderStats() {
+  const now = new Date(), wk = monday(now), prevWk = addDays(wk, -7);
+  const thisW = sets.filter(s => between(s, wk, addDays(wk, 7)));
+  const lastW = sets.filter(s => between(s, prevWk, addDays(now, -7))); // même moment de la semaine dernière
+
+  // Héros : tonnage de la semaine (ou reps si aucun poids n'a jamais été saisi)
+  const useKg = sets.some(s => s.kg);
+  const metric = a => sum(a, s => useKg ? s.reps * s.kg : s.reps);
+  const v = metric(thisW);
+  $('heroLab').textContent = useKg ? 'Tonnage · semaine' : 'Répétitions · semaine';
+  $('heroN').innerHTML = useKg ? (v >= 1000 ? `${num(v / 1000)} <small>t</small>` : `${num(v)} <small>kg</small>`) : `${v} <small>reps</small>`;
+  $('heroDelta').innerHTML = delta(v, metric(lastW));
+  const weeks = Array.from({length: 10}, (_, i) => addDays(wk, (i - 9) * 7));
+  const wv = weeks.map(w => metric(sets.filter(s => between(s, w, addDays(w, 7)))));
+  draw('cHero', {type: 'line', options: {scales: {x: {display: false}, y: {display: false, beginAtZero: true}}, interaction: {mode: 'index', intersect: false},
+      plugins: {tooltip: {callbacks: {title: i => 'Semaine du ' + i[0].label, label: i => num(i.raw) + (useKg ? ' kg' : ' reps')}}}},
+    data: {labels: weeks.map(w => w.toLocaleDateString('fr-FR', {day: 'numeric', month: 'short'})), datasets: [{...line(wv), pointRadius: wv.map((_, i) => i === 9 ? 4 : 0)}]}});
+
+  const last30 = sets.filter(s => between(s, addDays(now, -30), addDays(now, 1)));
+  const prev30 = sets.filter(s => between(s, addDays(now, -60), addDays(now, -30)));
+  const days = a => new Set(a.map(s => dayKey(s.date))).size;
+  const kpi = (label, val, d) => `<div class="g"><strong>${val}</strong><span class="lab">${label}</span><br>${d}</div>`;
+  $('kpis').innerHTML =
+    kpi('Séances · 30 j', days(last30), delta(days(last30), days(prev30))) +
+    kpi('Séries · sem.', thisW.length, delta(thisW.length, lastW.length)) +
+    kpi('Reps · sem.', sum(thisW, s => s.reps), delta(sum(thisW, s => s.reps), sum(lastW, s => s.reps)));
+
+  // Zones sur 30 jours, toutes affichées pour voir ce qui est négligé
+  const zones = ZONES.map(z => [z, last30.filter(s => s.zone === z).length]).sort((a, b) => b[1] - a[1]);
+  const max = zones[0][1] || 1;
+  $('zones').innerHTML = zones.map(([z, n]) => `<div class="zone${n ? '' : ' off'}"><div class="between"><span>${z}</span><span>${n}</span></div>
+    <div class="track"><i style="width:${n / max * 100}%;opacity:${.3 + .7 * n / max}"></i></div></div>`).join('');
+
+  const freq = Object.entries(Object.groupBy(sets, s => s.ex)).sort((a, b) => b[1].length - a[1].length);
+  const sel = $('pex').value;
+  $('pex').innerHTML = freq.map(([x]) => `<option>${esc(x)}</option>`).join('') || '<option>Aucun exercice</option>';
+  if (freq.some(([x]) => x === sel)) $('pex').value = sel;
+  renderProg();
+
+  const cnt = {}; sets.forEach(s => { const k = dayKey(s.date); cnt[k] = (cnt[k] || 0) + 1; });
+  const start = addDays(wk, -17 * 7);
+  $('heat').innerHTML = Array.from({length: 126}, (_, i) => {
+    const d = addDays(start, i), n = cnt[dayKey(d)] || 0;
+    return `<i title="${d.toLocaleDateString('fr-FR')} · ${n} séries" style="${d > now ? 'visibility:hidden' : 'background:' + HEAT[n && Math.min(4, Math.ceil(n / 5))]}"></i>`;
+  }).join('');
+  $('heatLegend').innerHTML = 'Moins ' + HEAT.map(c => `<i style="background:${c}"></i>`).join('') + ' Plus';
+}
+
+// Progression : meilleure série du jour (poids si renseigné, sinon reps)
+function renderProg() {
+  const ex = sets.filter(s => s.ex === $('pex').value);
+  const useKg = ex.some(s => s.kg), key = useKg ? 'kg' : 'reps', unit = useKg ? 'kg' : 'reps';
+  const best = Object.entries(Object.groupBy(ex, s => dayKey(s.date))).map(([d, a]) => [d, Math.max(...a.map(s => s[key]))]);
+  const gain = best.length > 1 ? best.at(-1)[1] - best[0][1] : 0;
+  $('rec').innerHTML = best.length ? `Record <b>${num(Math.max(...best.map(b => b[1])))} ${unit}</b>` +
+    (gain ? `<span class="delta ${gain > 0 ? 'up' : 'down'}">${gain > 0 ? '▲ +' : '▼ '}${num(gain)} ${unit} depuis le début</span>` : '') : '';
+  draw('cProg', {type: 'line', options: {interaction: {mode: 'index', intersect: false},
+      scales: {x: {grid: {display: false}, border: {display: false}, ticks: {maxRotation: 0, autoSkipPadding: 16}}, y: {border: {display: false}, ticks: {maxTicksLimit: 5, precision: useKg ? 1 : 0}}},
+      plugins: {tooltip: {callbacks: {label: i => num(i.raw) + ' ' + unit}}}},
+    data: {labels: best.map(b => new Date(b[0] + 'T12:00').toLocaleDateString('fr-FR', {day: 'numeric', month: 'short'})),
+      datasets: [{...line(best.map(b => b[1])), pointRadius: 3}]}});
+}
+$('pex').onchange = renderProg;
+
+// ---------- Navigation, actions ----------
+let tab = 'log';
+function show(t) {
+  tab = t;
+  document.querySelectorAll('section').forEach(s => s.hidden = s.id !== t);
+  document.querySelectorAll('nav button').forEach(b => b.classList.toggle('on', b.dataset.tab === t));
+  scrollTo(0, 0); render();
+}
+function render() { renderLog(); renderHist(); if (tab === 'stats') renderStats(); }
+
+document.addEventListener('click', e => {
+  const b = e.target.closest('button'); if (!b) return;
+  if (b.dataset.tab) show(b.dataset.tab);
+  if (b.dataset.step) { const i = $(b.dataset.step); i.value = Math.max(+i.min, (+i.value || 0) + +b.dataset.d); }
+  if (b.dataset.del && confirm('Supprimer cette série ?')) { sets = sets.filter(s => s.id != b.dataset.del); save(); render(); }
+  if (b.dataset.dup) { const s = sets.find(s => s.id == b.dataset.dup); sets.push({...s, id: Date.now(), date: new Date().toISOString()}); save(); render(); navigator.vibrate?.(30); }
+});
+
+$('exp').onclick = () => {
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([JSON.stringify(sets)], {type: 'application/json'}));
+  a.download = `muscu-${dayKey(Date.now())}.json`; a.click();
+};
+$('imp').onchange = async e => {
+  try {
+    const data = JSON.parse(await e.target.files[0].text());
+    if (!Array.isArray(data) || !data.every(s => s.id && s.date && s.ex && s.reps)) throw 0;
+    const ids = new Set(sets.map(s => s.id));
+    const fresh = data.filter(s => !ids.has(s.id));
+    sets = [...sets, ...fresh].sort((a, b) => a.id - b.id); save(); render();
+    alert(`${fresh.length} séries importées.`);
+  } catch { alert('Fichier invalide.'); }
+  e.target.value = '';
+};
+
+render();
+if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js');
+</script>
+</body>
+</html>
